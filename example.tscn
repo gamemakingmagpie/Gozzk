@@ -25,6 +25,5 @@ grow_vertical = 0
 alignment = 2
 
 [node name="ChatReceiver" parent="." instance=ExtResource("2_kfdx7")]
-ChannelID = "c7ded8ea6b0605d3c78e18650d2df83b"
 
 [connection signal="ChatReceived" from="ChatReceiver" to="." method="_on_chat_received"]

@@ -3,7 +3,7 @@ extends Node
 #ChannelID를 원하는 방송에 맞춰서 변형해 주세요. 방송인의 주소 제일 뒤에있는 문자열이 고유 Channel ID 입니다.
 @export var ChannelID = ''
 #성인전용을 걸어놨을 경우 ChatChannelID가 검색 안되는 문제가 있습니다. 커스텀으로 Chat Channel ID를 기입해서 우회할 수 있도록 할 예정입니다.
-@export var ChatChannelID:String = ''
+var ChatChannelID:String = ''
 var AccessToken = null
 var socket = WebSocketPeer.new()
 var reconnect_time = 0.0
@@ -58,6 +58,7 @@ func _process(delta):
 			if body is Array:
 				for eachBody in body:
 					#익명 후원은 profile 이 null로 들어옵니다. 'extras'아래에 후원금액이 있으니 활용하려면 하세요.
+					if eachBody.profile == null:continue
 					var Profile = JSON.parse_string(eachBody['profile'])
 					if Profile.has('nickname'):
 						#메세지에 이모티콘은 {:d_num:} 형식으로 들어옵니다. 활용하시려면 하세요.
