@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://850g24igtxhw"]
+
+[ext_resource type="Script" path="res://ChatReceiver.gd" id="1_3766f"]
+
+[node name="ChatReceiver" type="Node"]
+script = ExtResource("1_3766f")

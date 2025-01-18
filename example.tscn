@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://83plejv2q1e4"]
+
+[ext_resource type="Script" path="res://example.gd" id="1_vkrn2"]
+[ext_resource type="PackedScene" uid="uid://850g24igtxhw" path="res://ChatReceiver.tscn" id="2_kfdx7"]
+
+[node name="Example" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_vkrn2")
+
+[node name="ChatContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 66.0
+offset_top = -578.0
+offset_right = 408.0
+offset_bottom = -38.0
+grow_vertical = 0
+alignment = 2
+
+[node name="ChatReceiver" parent="." instance=ExtResource("2_kfdx7")]
+ChannelID = "c7ded8ea6b0605d3c78e18650d2df83b"
+
+[connection signal="ChatReceived" from="ChatReceiver" to="." method="_on_chat_received"]
