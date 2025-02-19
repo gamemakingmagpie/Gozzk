@@ -11,8 +11,14 @@ var firstTime = true
 const REQTICK = 10.0
 
 signal ChatReceived(Nickname,Msg)
+signal Donation(Amount,Msg)
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	#Start()
+	pass # Replace with function body.
+
+func Start():
+	
 	#Channel ID를 통해서 Chat Channel ID를 찾습니다.
 	var HTTPSREQ = 'https://api.chzzk.naver.com/polling/v2/channels/%s/live-status'%ChannelID
 	var HTTP = HTTPRequest.new()
@@ -29,11 +35,8 @@ func _ready():
 	TOKENHTTP.request_completed.connect(_on_token_request_completed)
 	TOKENHTTP.request(TokenURL)
 	await TOKENHTTP.request_completed
-
 	socket.connect_to_url('wss://kr-ss3.chat.naver.com/chat')
 
-	pass # Replace with function body.
-	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	if socket == null:
@@ -57,7 +60,12 @@ func _process(delta):
 			var body = info['bdy']
 			if body is Array:
 				for eachBody in body:
-					#익명 후원은 profile 이 null로 들어옵니다. 'extras'아래에 후원금액이 있으니 활용하려면 하세요.
+					print(eachBody.msg)
+					#도네이션 처리. 익명후원때문에 profile이 null로 들어오기도 합니다. 익명 처리 거르고 닉네임 받아오게 만들 수 도 있겠네요.
+					var Extras:Dictionary = JSON.parse_string(eachBody['extras'])
+					if Extras.has('payAmount'):
+						Donation.emit(Extras.payAmount,eachBody.msg)
+						prints(Extras.payAmount,eachBody.msg)
 					if eachBody.profile == null:continue
 					var Profile = JSON.parse_string(eachBody['profile'])
 					if Profile.has('nickname'):
