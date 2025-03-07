@@ -10,7 +10,8 @@ config_version=5
 
 [application]
 
-config/name="Chzzzk"
+config/name="Gozzk"
+run/main_scene="res://example.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 
 [rendering]

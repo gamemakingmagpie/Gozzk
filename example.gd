@@ -3,6 +3,8 @@ extends Control
 @onready var ChatContainer = $ChatContainer
 # Called when the node enters the scene tree for the first time.
 func _ready():
+
+		
 	pass # Replace with function body.
 
 
@@ -11,8 +13,8 @@ func _process(delta):
 	pass
 
 
-func _on_chat_received(Nickname, Msg):
+func _on_chat_received(Nickname,Msg,IsSubscriber,RoleCode,emojis:Dictionary):
 	var NewChat:Chat = load('res://chat.tscn').instantiate()
 	ChatContainer.add_child(NewChat)
 	NewChat.ReceiveMessage(Nickname,Msg)
-	pass # Replace with function body.
+	

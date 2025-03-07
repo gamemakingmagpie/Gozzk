@@ -1,7 +1,7 @@
 extends Control
 class_name Chat
 @onready var NicknameLabel:Label = $HBoxContainer/Nickname
-@onready var MessageLabel:Label = $HBoxContainer/Message
+@onready var MessageLabel:RichTextLabel = $HBoxContainer/Message
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
