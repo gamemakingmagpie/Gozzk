@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://83plejv2q1e4"]
 
-[ext_resource type="Script" path="res://example.gd" id="1_vkrn2"]
+[ext_resource type="Script" uid="uid://b7kvpi17dvudk" path="res://example.gd" id="1_vkrn2"]
 [ext_resource type="PackedScene" uid="uid://850g24igtxhw" path="res://ChatReceiver.tscn" id="2_kfdx7"]
 
 [node name="Example" type="Control"]
@@ -25,6 +25,41 @@ grow_vertical = 0
 alignment = 2
 
 [node name="ChatReceiver" parent="." instance=ExtResource("2_kfdx7")]
-ChannelID = "48c8a45ba34f5c2e152b43c2f462942a"
+ChannelID = "0a07375b21a52bd69ff087fa5cc60f0d"
 
+[node name="TextureRect" type="TextureRect" parent="."]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -290.0
+offset_right = 150.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 3
+stretch_mode = 6
+
+[node name="Label" type="Label" parent="TextureRect"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -23.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/outline_size = 4
+horizontal_alignment = 1
+
+[connection signal="ChannelConnected" from="ChatReceiver" to="." method="_on_chat_receiver_channel_connected"]
+[connection signal="ChannelNotExist" from="ChatReceiver" to="." method="_on_chat_receiver_channel_not_exist"]
+[connection signal="ChannelNotLive" from="ChatReceiver" to="." method="_on_chat_receiver_channel_not_live"]
 [connection signal="ChatReceived" from="ChatReceiver" to="." method="_on_chat_received"]

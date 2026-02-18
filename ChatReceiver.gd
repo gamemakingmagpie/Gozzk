@@ -12,8 +12,12 @@ var firstTime = true
 
 const REQTICK = 10.0
 
+signal ChannelConnected(Name:String, Thumbnail:Texture2D)
+signal ChannelNotLive
+signal ChannelNotExist
 signal ChatReceived(Nickname,Msg,IsSubscriber,RoleCode,emojis)
 signal Donation(Amount,Msg)
+
 
 func _ready():
 	#이모티콘 처리용. 이모티콘을 다운받을 폴더를 만들어옵니다.
@@ -23,6 +27,7 @@ func _ready():
 	#ConLoad.visible=false
 	pass # Replace with function body.
 
+## 채팅 리시버를 시작합니다. 이 시점 이전에 ChannelID가 지정되어 있어야 합니다.
 func Start():
 	#Channel ID를 통해서 Chat Channel ID를 찾습니다.
 	var HTTPSREQ = 'https://api.chzzk.naver.com/polling/v2/channels/%s/live-status'%ChannelID
@@ -43,8 +48,14 @@ func Start():
 	await TOKENHTTP.request_completed
 	print('TOKEN Earned')
 	socket.connect_to_url('wss://kr-ss3.chat.naver.com/chat')
+	var HTTPSREQ_INFO = 'https://api.chzzk.naver.com/service/v1/channels/%s'%ChannelID
+	var HTTP_INFO = HTTPRequest.new()
+	add_child(HTTP_INFO)
+	HTTP_INFO.request_completed.connect(_on_info_request_completed)
+	HTTP_INFO.request(HTTPSREQ_INFO)
+	
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
+##프로세스에서 웹소켓 연결을 통해 정보를 지속적으로 받아옵니다. 
 func _process(delta):
 	if socket == null:
 		return
@@ -88,7 +99,7 @@ func _process(delta):
 
 	pass
 
-
+##메세지를 띄웁니다.
 func SendMessage(Nickname,Msg,IsSubscriber,RoleCode,emojis):
 	for eachEmoji in emojis:
 		if not FileAccess.file_exists('user://emojis/%s.res'%eachEmoji):
@@ -105,7 +116,7 @@ func SendMessage(Nickname,Msg,IsSubscriber,RoleCode,emojis):
 	ChatReceived.emit(Nickname,newMsg,IsSubscriber,RoleCode,emojis)
 	pass
 
-#
+##채팅창용. 이모지가 없으면 다운받고, 있다면 채팅을 띄웁니다.
 func free_request(result, response_code, headers, body,HTTP,Nickname,Msg,IsSubscriber,RoleCode,emojis,emoji_name):
 	#이모티콘을 다운받아 저장시킵니다.
 	var newTexture:Texture2D
@@ -115,6 +126,17 @@ func free_request(result, response_code, headers, body,HTTP,Nickname,Msg,IsSubsc
 		var newImage = Image.new()
 		newImage.load_png_from_buffer(body)
 		newTexture = ImageTexture.create_from_image(newImage)
+	elif emojis[emoji_name].ends_with('jpg'):
+		var newImage = Image.new()
+		newImage.load_jpg_from_buffer(body)
+		newTexture = ImageTexture.create_from_image(newImage)
+	elif emojis[emoji_name].ends_with('webp'):
+		var newImage = Image.new()
+		newImage.load_webp_from_buffer(body)
+		newTexture = ImageTexture.create_from_image(newImage)
+	else:
+		print("Image Not Recognized!")
+		return
 	ResourceSaver.save(newTexture,'user://emojis/%s.res'%emoji_name)
 	SendMessage(Nickname,Msg,IsSubscriber,RoleCode,emojis)
 	HTTP.queue_free()
@@ -125,11 +147,47 @@ func free_request(result, response_code, headers, body,HTTP,Nickname,Msg,IsSubsc
 func _on_cid_request_completed(result, response_code, headers, body):
 	if response_code==404:
 		print("ERROR:404 BAD REQUEST | Check Channel ID")
-		ChatReceived.emit("에러","Channel ID를 확인해주세요")
+		ChannelNotExist.emit()
 		return
-	ChatChannelID = JSON.parse_string(body.get_string_from_utf8())['content']["chatChannelId"]
+	if JSON.parse_string(body.get_string_from_utf8())['content']["status"] == "OPEN":
+		ChatChannelID = JSON.parse_string(body.get_string_from_utf8())['content']["chatChannelId"]
+	else:
+		ChannelNotLive.emit()
 	
 
-func _on_token_request_completed(result, response_code, headers, body):
-	
+func _on_token_request_completed(_result, _response_code, _headers, body):
 	AccessToken = JSON.parse_string(body.get_string_from_utf8())['content']['accessToken']
+
+func _on_info_request_completed(_result, _response_code, _headers, body):
+	_request_image(JSON.parse_string(body.get_string_from_utf8())['content']['channelName'],JSON.parse_string(body.get_string_from_utf8())['content']['channelImageUrl'])
+	pass
+
+func _request_image(Name:String,ImageURL:String):
+	var newRequest:=HTTPRequest.new()
+	
+	add_child(newRequest)
+	newRequest.request_completed.connect(_image_received.bind(Name,ImageURL))
+	newRequest.request(ImageURL)
+	pass
+
+func _image_received(_result, _response_code, _headers, body, Name:String,ImageURL:String):
+	var newTexture:Texture2D
+	if ImageURL.ends_with('gif'):
+		newTexture = GifManager.animated_texture_from_buffer(body)
+	elif ImageURL.ends_with('png'):
+		var newImage = Image.new()
+		newImage.load_png_from_buffer(body)
+		newTexture = ImageTexture.create_from_image(newImage)
+	elif ImageURL.ends_with('jpg'):
+		var newImage = Image.new()
+		newImage.load_jpg_from_buffer(body)
+		newTexture = ImageTexture.create_from_image(newImage)
+	elif ImageURL.ends_with('webp'):
+		var newImage = Image.new()
+		newImage.load_webp_from_buffer(body)
+		newTexture = ImageTexture.create_from_image(newImage)
+	else:
+		print("Image Not Recognized!")
+		return
+	ChannelConnected.emit(Name,newTexture)
+	pass
